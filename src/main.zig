@@ -1,16 +1,13 @@
-// #include "chip8/Config.h"
-// #include "chip8/Cpu.h"
-// #include "chip8/Execution.h"
-//
-// #include "sdl2/SDL2Backend.h"
-
 const std = @import("std");
+const assert = std.debug.assert;
 
 const chip8 = @import("chip8/chip8.zig");
+const sdl2 = @import("sdl2/sdl2_backend.zig");
 
 pub fn main() !void {
     var general_purpose_allocator = std.heap.GeneralPurposeAllocator(.{}){};
     const gpa = &general_purpose_allocator.allocator;
+
     const args = try std.process.argsAlloc(gpa);
     defer std.process.argsFree(gpa, args);
 
@@ -18,12 +15,7 @@ pub fn main() !void {
         std.debug.print("{}: {s}\n", .{ i, arg });
     }
 
-    //assert(args.size)
-    //     if (ac != 2)
-    //     {
-    //         std::cerr << "error: missing rom file" << std::endl;
-    //         return 1;
-    //     }
+    assert(args.len == 2);
 
     var config: chip8.EmuConfig = undefined;
 
@@ -37,25 +29,21 @@ pub fn main() !void {
 
     // Load program in chip8 memory
     {
-        // const programPath = args[1];
-        // assert(programPath != nullptr);
-        //
-        // std::cout << "[INFO] loading program: " << programPath << std::endl;
-        //
-        // std::ifstream programFile(programPath, std::ios::binary | std::ios::ate);
-        // const std::ifstream::pos_type programSizeInBytes = programFile.tellg();
-        //
-        // std::cout << "[INFO] rom size: " << programSizeInBytes << std::endl;
-        //
-        // std::vector<char> programContent(programSizeInBytes);
-        //
-        // programFile.seekg(0, std::ios::beg);
-        // programFile.read(&(programContent[0]), programSizeInBytes);
-        //
-        // std::cout << "[INFO] program loaded" << std::endl;
-        //
-        // chip8::load_program(cpu_state, reinterpret_cast<const u8*>(programContent.data()), programSizeInBytes);
+        std.debug.print("[INFO] loading program: {s}\n", .{args[1]});
+
+        var file = try std.fs.cwd().openFile(args[1], .{});
+        defer file.close();
+
+        const file_size = try file.getEndPos();
+
+        var buffer: [1024 * 4]u8 = undefined;
+        const bytes_read = try file.read(buffer[0..buffer.len]);
+
+        std.debug.print("[INFO] rom size: {}\n", .{bytes_read});
+        std.debug.print("[INFO] program loaded\n", .{});
+
+        chip8.load_program(&cpu_state, buffer[0..bytes_read]);
     }
 
-    // sdl2::execute_main_loop(cpu_state, config);
+    try sdl2.execute_main_loop(&cpu_state, config);
 }

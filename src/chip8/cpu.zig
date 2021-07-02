@@ -10,13 +10,13 @@ const FontTableGlyphCount: u32 = 16;
 const GlyphSizeInBytes: u16 = 5;
 
 // Display
-const ScreenWidth: u32 = 64;
-const ScreenHeight: u32 = 32;
-const ScreenLineSizeInBytes: u32 = ScreenWidth / 8;
+pub const ScreenWidth: u32 = 64;
+pub const ScreenHeight: u32 = 32;
+pub const ScreenLineSizeInBytes: u32 = ScreenWidth / 8;
 
 // Memory
-const MinProgramAddress: u16 = 0x0200;
-const MaxProgramAddress: u16 = 0x0FFF;
+pub const MinProgramAddress: u16 = 0x0200;
+pub const MaxProgramAddress: u16 = 0x0FFF;
 
 // Timings
 const DelayTimerFrequency: u32 = 60;
@@ -97,7 +97,6 @@ pub fn createCPUState() !CPUState {
 
     const allocator: *std.mem.Allocator = std.heap.page_allocator;
 
-    // Leave the memory uninitialized. This is very useful when debugging with valgrind.
     state.memory = try allocator.alloc(u8, MemorySizeInBytes);
     errdefer allocator.free(state.memory);
 
