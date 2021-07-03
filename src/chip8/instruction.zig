@@ -300,12 +300,12 @@ pub fn execute_drw(state: *cpu.CPUState, registerLHS: u8, registerRHS: u8, size:
     var collision = false;
 
     // Sprites are made of rows of 1 byte each.
-    for (state.memory[state.i..size]) |spriteRow, rowIndex| {
+    for (state.memory[state.i .. state.i + size]) |spriteRow, rowIndex| {
         const screenY: u32 = (spriteStartY + @intCast(u32, rowIndex)) % cpu.ScreenHeight;
 
-        var pixelIndex: u3 = 0;
+        var pixelIndex: u32 = 0;
         while (pixelIndex < 8) {
-            const spritePixelValue = (spriteRow >> (7 - pixelIndex)) & 0x1;
+            const spritePixelValue = (spriteRow >> (7 - @intCast(u3, pixelIndex))) & 0x1;
             const screenX = (spriteStartX + pixelIndex) % cpu.ScreenWidth;
 
             const screenPixelValue = display.read_screen_pixel(state, screenX, screenY);
@@ -444,7 +444,7 @@ pub fn execute_ldai(state: *cpu.CPUState, registerName: u8) void {
     assert((registerIndexMax & 0xF0) == 0); // Invalid register
     assert(memory.is_valid_range(state.i, registerIndexMax + 1, memory.Usage.Write));
 
-    for (state.vRegisters[0..registerIndexMax]) |reg, index| {
+    for (state.vRegisters[0 .. registerIndexMax + 1]) |reg, index| {
         state.memory[state.i + index] = reg;
     }
 }
@@ -457,7 +457,7 @@ pub fn execute_ldm(state: *cpu.CPUState, registerName: u8) void {
     assert((registerIndexMax & 0xF0) == 0); // Invalid register
     assert(memory.is_valid_range(state.i, registerIndexMax + 1, memory.Usage.Read));
 
-    for (state.memory[state.i..registerIndexMax]) |byte, index| {
+    for (state.memory[state.i .. state.i + registerIndexMax + 1]) |byte, index| {
         state.vRegisters[index] = byte;
     }
 }
