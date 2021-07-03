@@ -115,7 +115,7 @@ pub fn execute_add(state: *cpu.CPUState, registerName: u8, value: u8) void {
     assert((registerName & 0xF0) == 0); // Invalid register
 
     const registerValue = state.vRegisters[registerName];
-    const sum = registerValue + value; // FIXME overflow
+    const sum = registerValue +% value;
 
     state.vRegisters[registerName] = sum;
 }
@@ -172,7 +172,7 @@ pub fn execute_add2(state: *cpu.CPUState, registerLHS: u8, registerRHS: u8) void
 
     const valueLHS = state.vRegisters[registerLHS];
     const valueRHS = state.vRegisters[registerRHS];
-    const result = valueLHS + valueRHS; // FIXME overflow
+    const result = valueLHS +% valueRHS;
 
     state.vRegisters[registerLHS] = result;
     state.vRegisters[@enumToInt(cpu.Register.VF)] = if (result > valueLHS) 0 else 1; // Set carry
@@ -187,7 +187,7 @@ pub fn execute_sub(state: *cpu.CPUState, registerLHS: u8, registerRHS: u8) void 
 
     const valueLHS = state.vRegisters[registerLHS];
     const valueRHS = state.vRegisters[registerRHS];
-    const result = valueLHS - valueRHS; // FIXME overflow
+    const result = valueLHS -% valueRHS;
 
     state.vRegisters[registerLHS] = result;
     state.vRegisters[@enumToInt(cpu.Register.VF)] = if (valueLHS > valueRHS) 1 else 0; // Set carry
@@ -216,7 +216,7 @@ pub fn execute_subn(state: *cpu.CPUState, registerLHS: u8, registerRHS: u8) void
 
     const valueLHS = state.vRegisters[registerLHS];
     const valueRHS = state.vRegisters[registerRHS];
-    const result = valueRHS - valueLHS; // FIXME overflow
+    const result = valueRHS -% valueLHS;
 
     state.vRegisters[registerLHS] = result;
     state.vRegisters[@enumToInt(cpu.Register.VF)] = if (valueRHS > valueLHS) 1 else 0; // Set carry
@@ -259,7 +259,7 @@ pub fn execute_ldi(state: *cpu.CPUState, address: u16) void {
 // The program counter is set to nnn plus the value of V0.
 pub fn execute_jp2(state: *cpu.CPUState, baseAddress: u16) void {
     const offset: u16 = state.vRegisters[@enumToInt(cpu.Register.V0)];
-    const targetAddress = baseAddress + offset; // FIXME overflow
+    const targetAddress = baseAddress + offset;
 
     assert((targetAddress & 0x0001) == 0); // Unaligned address
     assert(memory.is_valid_range(targetAddress, 2, memory.Usage.Execute));
@@ -401,7 +401,7 @@ pub fn execute_addi(state: *cpu.CPUState, registerName: u8) void {
     assert((registerName & 0xF0) == 0); // Invalid register
 
     const registerValue: u16 = state.vRegisters[registerName];
-    const sum = state.i + registerValue; // FIXME overflow
+    const sum = state.i +% registerValue;
 
     assert(sum >= state.i); // Overflow
 
