@@ -52,14 +52,16 @@ fn fill_image_buffer(imageOutput: []u8, state: *chip8.CPUState, palette: chip8.P
 
 pub fn execute_main_loop(state: *chip8.CPUState, config: chip8.EmuConfig) !void {
     const pixelFormatBGRASizeInBytes: u32 = 4;
-    //const scale = config.screenScale;
-    const scale = 4; // FIXME
+    const scale = config.screenScale;
     const width = chip8.ScreenWidth * scale;
     const height = chip8.ScreenHeight * scale;
     const stride = width * pixelFormatBGRASizeInBytes; // No extra space between lines
-    const size = stride * chip8.ScreenHeight * scale;
+    const size = stride * height;
 
-    var image: [size * 4]u8 = undefined;
+    const allocator: *std.mem.Allocator = std.heap.page_allocator;
+
+    var image = try allocator.alloc(u8, size);
+    errdefer allocator.free(state.memory);
 
     if (c.SDL_Init(c.SDL_INIT_EVERYTHING) != 0) {
         c.SDL_Log("Unable to initialize SDL: %s", c.SDL_GetError());
@@ -67,14 +69,13 @@ pub fn execute_main_loop(state: *chip8.CPUState, config: chip8.EmuConfig) !void 
     }
     defer c.SDL_Quit();
 
-    const win = c.SDL_CreateWindow("CHIP-8 Emulator", c.SDL_WINDOWPOS_UNDEFINED, c.SDL_WINDOWPOS_UNDEFINED, width, height, c.SDL_WINDOW_SHOWN) orelse
-        {
+    const window = c.SDL_CreateWindow("CHIP-8 Emulator", c.SDL_WINDOWPOS_UNDEFINED, c.SDL_WINDOWPOS_UNDEFINED, @intCast(c_int, width), @intCast(c_int, height), c.SDL_WINDOW_SHOWN) orelse {
         c.SDL_Log("Unable to create window: %s", c.SDL_GetError());
         return error.SDLInitializationFailed;
     };
-    defer c.SDL_DestroyWindow(win);
+    defer c.SDL_DestroyWindow(window);
 
-    const ren = c.SDL_CreateRenderer(win, -1, c.SDL_RENDERER_ACCELERATED) orelse {
+    const ren = c.SDL_CreateRenderer(window, -1, c.SDL_RENDERER_ACCELERATED) orelse {
         c.SDL_Log("Unable to create renderer: %s", c.SDL_GetError());
         return error.SDLInitializationFailed;
     };
@@ -84,6 +85,7 @@ pub fn execute_main_loop(state: *chip8.CPUState, config: chip8.EmuConfig) !void 
     var gmask: u32 = undefined;
     var bmask: u32 = undefined;
     var amask: u32 = undefined;
+
     if (c.SDL_BYTEORDER == c.SDL_BIG_ENDIAN) {
         rmask = 0xff000000;
         gmask = 0x00ff0000;
@@ -100,7 +102,7 @@ pub fn execute_main_loop(state: *chip8.CPUState, config: chip8.EmuConfig) !void 
     var depth: u32 = 32;
     var pitch: u32 = stride;
 
-    const surf = c.SDL_CreateRGBSurfaceFrom(&image, width, height, @intCast(c_int, depth), @intCast(c_int, pitch), rmask, gmask, bmask, amask) orelse {
+    const surf = c.SDL_CreateRGBSurfaceFrom(@ptrCast(*c_void, &image[0]), @intCast(c_int, width), @intCast(c_int, height), @intCast(c_int, depth), @intCast(c_int, pitch), rmask, gmask, bmask, amask) orelse {
         c.SDL_Log("Unable to create surface: %s", c.SDL_GetError());
         return error.SDLInitializationFailed;
     };
@@ -149,7 +151,7 @@ pub fn execute_main_loop(state: *chip8.CPUState, config: chip8.EmuConfig) !void 
 
         chip8.execute_step(state, deltaTimeMs);
 
-        // fill_image_buffer(image, state, config.palette, scale); FIXME
+        fill_image_buffer(image, state, config.palette, scale);
 
         // Draw
         const tex = c.SDL_CreateTextureFromSurface(ren, surf) orelse {
