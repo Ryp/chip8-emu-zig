@@ -10,7 +10,6 @@ pub const Palette = struct {
 };
 
 pub const EmuConfig = struct {
-    debugMode: bool,
     palette: Palette,
     screenScale: u32,
 };

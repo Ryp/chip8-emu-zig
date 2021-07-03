@@ -147,7 +147,7 @@ pub fn execute_main_loop(state: *chip8.CPUState, config: chip8.EmuConfig) !void 
         const currentTimeMs: u32 = c.SDL_GetTicks();
         const deltaTimeMs: u32 = currentTimeMs - previousTimeMs;
 
-        chip8.execute_step(config, state, deltaTimeMs);
+        chip8.execute_step(state, deltaTimeMs);
 
         // fill_image_buffer(image, state, config.palette, scale); FIXME
 

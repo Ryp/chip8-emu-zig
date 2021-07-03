@@ -23,14 +23,14 @@ fn load_next_instruction(state: *cpu.CPUState) u16 {
     return msb | lsb;
 }
 
-pub fn execute_step(cfg: config.EmuConfig, state: *cpu.CPUState, deltaTimeMs: u32) void {
+pub fn execute_step(state: *cpu.CPUState, deltaTimeMs: u32) void {
     var instructionsToExecute = update_timers(state, deltaTimeMs);
     var i: u32 = 0;
 
     while (i < instructionsToExecute) {
         // Simulate logic
         const nextInstruction = load_next_instruction(state);
-        execute_instruction(cfg, state, nextInstruction);
+        execute_instruction(state, nextInstruction);
 
         i += 1;
     }
@@ -60,7 +60,7 @@ fn update_timers(state: *cpu.CPUState, deltaTimeMs: u32) u32 {
     return executionCounter;
 }
 
-pub fn execute_instruction(cfg: config.EmuConfig, state: *cpu.CPUState, instruction: u16) void {
+pub fn execute_instruction(state: *cpu.CPUState, instruction: u16) void {
     // Save PC for later
     const pcSave = state.pc;
 

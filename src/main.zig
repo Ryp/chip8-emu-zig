@@ -15,7 +15,6 @@ pub fn main() !void {
 
     var config: chip8.EmuConfig = undefined;
 
-    config.debugMode = true;
     config.palette.primary = chip8.Color{ .r = 1.0, .g = 1.0, .b = 1.0 };
     config.palette.secondary = chip8.Color{ .r = 0.14, .g = 0.14, .b = 0.14 };
     config.screenScale = 8;
