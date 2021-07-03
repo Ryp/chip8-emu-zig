@@ -33,8 +33,8 @@ pub fn get_key_pressed(keyState: u16) u8 {
 }
 
 pub fn set_key_pressed(state: *cpu.CPUState, key: u8, pressedState: bool) void {
-    Assert(key < KeyIDCount); // Invalid key
+    assert(key < KeyIDCount); // Invalid key
 
-    const keyMask = @intCast(u16, 1 << key);
+    const keyMask = @intCast(u16, 1) << @intCast(u4, key);
     state.keyState = (state.keyState & ~keyMask) | (if (pressedState) keyMask else 0);
 }

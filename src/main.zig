@@ -11,10 +11,6 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(gpa);
     defer std.process.argsFree(gpa, args);
 
-    for (args) |arg, i| {
-        std.debug.print("{}: {s}\n", .{ i, arg });
-    }
-
     assert(args.len == 2);
 
     var config: chip8.EmuConfig = undefined;
