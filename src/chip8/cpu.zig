@@ -40,7 +40,7 @@ pub const CPUState = struct {
     delayTimerAccumulator: u32,
     executionTimerAccumulator: u32,
 
-    memory: []u8, // FIXME so this is a slice?
+    memory: []u8,
 
     keyState: u16,
 
