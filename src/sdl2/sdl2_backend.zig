@@ -84,7 +84,8 @@ pub fn execute_main_loop(state: *chip8.CPUState, config: chip8.EmuConfig) !void 
     //    SDL_Surface* surf = SDL_CreateRGBSurfaceFrom(static_cast<void*>(image.data()), width, height, depth, pitch, rmask, gmask, bmask, amask);
     //    Assert(surf != nullptr, SDL_GetError());
     //
-    //    unsigned int previousTimeMs = SDL_GetTicks();
+    const previousTimeMs: u32 = 0;
+    //const previousTimeMs: u32 = SDL_GetTicks(); FIXME
     var shouldExit = false;
 
     while (!shouldExit) {
@@ -123,10 +124,11 @@ pub fn execute_main_loop(state: *chip8.CPUState, config: chip8.EmuConfig) !void 
         //        chip8::set_key_pressed(state, 0xB, sdlKeyStates[SDL_SCANCODE_C]);
         //        chip8::set_key_pressed(state, 0xF, sdlKeyStates[SDL_SCANCODE_V]);
         //
-        //        unsigned int currentTimeMs = SDL_GetTicks();
-        //        unsigned int deltaTimeMs = currentTimeMs - previousTimeMs;
-        //
-        //chip8.execute_step(config, state, deltaTimeMs);
+        const currentTimeMs: u32 = 0;
+        //u32 currentTimeMs = SDL_GetTicks(); FIXME
+        const deltaTimeMs: u32 = currentTimeMs - previousTimeMs;
+
+        chip8.execute_step(config, state, deltaTimeMs);
         //
         //        fill_image_buffer(image.data(), state, config.palette, scale);
         //

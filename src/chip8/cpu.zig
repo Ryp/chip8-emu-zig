@@ -2,7 +2,7 @@ const std = @import("std");
 const assert = std.debug.assert;
 
 const VRegisterCount: u32 = 16;
-const StackSize: u32 = 16;
+pub const StackSize: u32 = 16;
 const MemorySizeInBytes: u32 = 0x1000;
 
 // Fonts
@@ -21,10 +21,10 @@ pub const MaxProgramAddress: u16 = 0x0FFF;
 // Timings
 const DelayTimerFrequency: u32 = 60;
 const InstructionExecutionFrequency: u32 = 500;
-const DelayTimerPeriodMs: u32 = 1000 / DelayTimerFrequency;
-const InstructionExecutionPeriodMs: u32 = 1000 / InstructionExecutionFrequency;
+pub const DelayTimerPeriodMs: u32 = 1000 / DelayTimerFrequency;
+pub const InstructionExecutionPeriodMs: u32 = 1000 / InstructionExecutionFrequency;
 
-const VRegisterName = enum { V0, V1, V2, V3, V4, V5, V6, V7, V8, V9, VA, VB, VC, VD, VE, VF };
+pub const Register = enum { V0, V1, V2, V3, V4, V5, V6, V7, V8, V9, VA, VB, VC, VD, VE, VF };
 
 pub const CPUState = struct {
     pc: u16,
