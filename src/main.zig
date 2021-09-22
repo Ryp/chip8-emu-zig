@@ -29,8 +29,6 @@ pub fn main() !void {
         var file = try std.fs.cwd().openFile(args[1], .{});
         defer file.close();
 
-        const file_size = try file.getEndPos();
-
         var buffer: [1024 * 4]u8 = undefined;
         const bytes_read = try file.read(buffer[0..buffer.len]);
 
