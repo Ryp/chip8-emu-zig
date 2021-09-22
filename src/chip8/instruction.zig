@@ -33,6 +33,8 @@ pub fn execute_ret(state: *cpu.CPUState) void {
 // NOTE: We choose to ignore it since we don't load any code into system memory.
 pub fn execute_sys(state: *cpu.CPUState, address: u16) void {
     // noop
+    _ = state;
+    _ = address;
 }
 
 // Jump to location nnn.

@@ -4,7 +4,7 @@ const assert = std.debug.assert;
 const cpu = @import("cpu.zig");
 const config = @import("config.zig");
 const memory = @import("memory.zig");
-usingnamespace @import("instruction.zig");
+const instruction = @import("instruction.zig");
 
 pub fn load_program(state: *cpu.CPUState, program: []u8) void {
     assert((program.len & 0x0001) == 0); // Unaligned size
@@ -60,200 +60,200 @@ fn update_timers(state: *cpu.CPUState, deltaTimeMs: u32) u32 {
     return executionCounter;
 }
 
-pub fn execute_instruction(state: *cpu.CPUState, instruction: u16) void {
+pub fn execute_instruction(state: *cpu.CPUState, instruction_num: u16) void {
     // Save PC for later
     const pcSave = state.pc;
 
     // Decode and execute
-    if (instruction == 0x00E0) {
+    if (instruction_num == 0x00E0) {
         // 00E0 - CLS
-        execute_cls(state);
-    } else if (instruction == 0x00EE) {
+        instruction.execute_cls(state);
+    } else if (instruction_num == 0x00EE) {
         // 00EE - RET
-        execute_ret(state);
-    } else if ((instruction & 0xF000) == 0x0000) {
+        instruction.execute_ret(state);
+    } else if ((instruction_num & 0xF000) == 0x0000) {
         // 0nnn - SYS addr
-        const address = instruction & 0x0FFF;
+        const address = instruction_num & 0x0FFF;
 
-        execute_sys(state, address);
-    } else if ((instruction & 0xF000) == 0x1000) {
+        instruction.execute_sys(state, address);
+    } else if ((instruction_num & 0xF000) == 0x1000) {
         // 1nnn - JP addr
-        const address = instruction & 0x0FFF;
+        const address = instruction_num & 0x0FFF;
 
-        execute_jp(state, address);
-    } else if ((instruction & 0xF000) == 0x2000) {
+        instruction.execute_jp(state, address);
+    } else if ((instruction_num & 0xF000) == 0x2000) {
         // 2nnn - CALL addr
-        const address = instruction & 0x0FFF;
+        const address = instruction_num & 0x0FFF;
 
-        execute_call(state, address);
-    } else if ((instruction & 0xF000) == 0x3000) {
+        instruction.execute_call(state, address);
+    } else if ((instruction_num & 0xF000) == 0x3000) {
         // 3xkk - SE Vx, byte
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const value = @intCast(u8, instruction & 0x00FF);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const value = @intCast(u8, instruction_num & 0x00FF);
 
-        execute_se(state, registerName, value);
-    } else if ((instruction & 0xF000) == 0x4000) {
+        instruction.execute_se(state, registerName, value);
+    } else if ((instruction_num & 0xF000) == 0x4000) {
         // 4xkk - SNE Vx, byte
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const value = @intCast(u8, instruction & 0x00FF);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const value = @intCast(u8, instruction_num & 0x00FF);
 
-        execute_sne(state, registerName, value);
-    } else if ((instruction & 0xF00F) == 0x5000) {
+        instruction.execute_sne(state, registerName, value);
+    } else if ((instruction_num & 0xF00F) == 0x5000) {
         // 5xy0 - SE Vx, Vy
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_se2(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF000) == 0x6000) {
+        instruction.execute_se2(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF000) == 0x6000) {
         // 6xkk - LD Vx, byte
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const value = @intCast(u8, instruction & 0x00FF);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const value = @intCast(u8, instruction_num & 0x00FF);
 
-        execute_ld(state, registerName, value);
-    } else if ((instruction & 0xF000) == 0x7000) {
+        instruction.execute_ld(state, registerName, value);
+    } else if ((instruction_num & 0xF000) == 0x7000) {
         // 7xkk - ADD Vx, byte
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const value = @intCast(u8, instruction & 0x00FF);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const value = @intCast(u8, instruction_num & 0x00FF);
 
-        execute_add(state, registerName, value);
-    } else if ((instruction & 0xF00F) == 0x8000) {
+        instruction.execute_add(state, registerName, value);
+    } else if ((instruction_num & 0xF00F) == 0x8000) {
         // 8xy0 - LD Vx, Vy
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_ld2(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF00F) == 0x8001) {
+        instruction.execute_ld2(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF00F) == 0x8001) {
         // 8xy1 - OR Vx, Vy
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_or(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF00F) == 0x8002) {
+        instruction.execute_or(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF00F) == 0x8002) {
         // 8xy2 - AND Vx, Vy
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_and(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF00F) == 0x8003) {
+        instruction.execute_and(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF00F) == 0x8003) {
         // 8xy3 - XOR Vx, Vy
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_xor(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF00F) == 0x8004) {
+        instruction.execute_xor(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF00F) == 0x8004) {
         // 8xy4 - ADD Vx, Vy
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_add2(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF00F) == 0x8005) {
+        instruction.execute_add2(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF00F) == 0x8005) {
         // 8xy5 - SUB Vx, Vy
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_sub(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF00F) == 0x8006) {
+        instruction.execute_sub(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF00F) == 0x8006) {
         // 8xy6 - SHR Vx {, Vy}
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_shr1(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF00F) == 0x8007) {
+        instruction.execute_shr1(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF00F) == 0x8007) {
         // 8xy7 - SUBN Vx, Vy
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_subn(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF00F) == 0x800E) {
+        instruction.execute_subn(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF00F) == 0x800E) {
         // 8xyE - SHL Vx {, Vy}
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_shl1(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF00F) == 0x9000) {
+        instruction.execute_shl1(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF00F) == 0x9000) {
         // 9xy0 - SNE Vx, Vy
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
 
-        execute_sne2(state, registerLHS, registerRHS);
-    } else if ((instruction & 0xF000) == 0xA000) {
+        instruction.execute_sne2(state, registerLHS, registerRHS);
+    } else if ((instruction_num & 0xF000) == 0xA000) {
         // Annn - LD I, addr
-        const address = instruction & 0x0FFF;
+        const address = instruction_num & 0x0FFF;
 
-        execute_ldi(state, address);
-    } else if ((instruction & 0xF000) == 0xB000) {
+        instruction.execute_ldi(state, address);
+    } else if ((instruction_num & 0xF000) == 0xB000) {
         // Bnnn - JP V0, addr
-        const address = instruction & 0x0FFF;
+        const address = instruction_num & 0x0FFF;
 
-        execute_jp2(state, address);
-    } else if ((instruction & 0xF000) == 0xC000) {
+        instruction.execute_jp2(state, address);
+    } else if ((instruction_num & 0xF000) == 0xC000) {
         // Cxkk - RND Vx, byte
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const value = @intCast(u8, instruction & 0x00FF);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const value = @intCast(u8, instruction_num & 0x00FF);
 
-        execute_rnd(state, registerName, value);
-    } else if ((instruction & 0xF000) == 0xD000) {
+        instruction.execute_rnd(state, registerName, value);
+    } else if ((instruction_num & 0xF000) == 0xD000) {
         // Dxyn - DRW Vx, Vy, nibble
-        const registerLHS = @intCast(u8, (instruction & 0x0F00) >> 8);
-        const registerRHS = @intCast(u8, (instruction & 0x00F0) >> 4);
-        const size = @intCast(u8, instruction & 0x000F);
+        const registerLHS = @intCast(u8, (instruction_num & 0x0F00) >> 8);
+        const registerRHS = @intCast(u8, (instruction_num & 0x00F0) >> 4);
+        const size = @intCast(u8, instruction_num & 0x000F);
 
-        execute_drw(state, registerLHS, registerRHS, size);
-    } else if ((instruction & 0xF0FF) == 0xE09E) {
+        instruction.execute_drw(state, registerLHS, registerRHS, size);
+    } else if ((instruction_num & 0xF0FF) == 0xE09E) {
         // Ex9E - SKP Vx
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_skp(state, registerName);
-    } else if ((instruction & 0xF0FF) == 0xE0A1) {
+        instruction.execute_skp(state, registerName);
+    } else if ((instruction_num & 0xF0FF) == 0xE0A1) {
         // ExA1 - SKNP Vx
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_sknp(state, registerName);
-    } else if ((instruction & 0xF0FF) == 0xF007) {
+        instruction.execute_sknp(state, registerName);
+    } else if ((instruction_num & 0xF0FF) == 0xF007) {
         // Fx07 - LD Vx, DT
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_ldt(state, registerName);
-    } else if ((instruction & 0xF0FF) == 0xF00A) {
+        instruction.execute_ldt(state, registerName);
+    } else if ((instruction_num & 0xF0FF) == 0xF00A) {
         // Fx0A - LD Vx, K
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_ldk(state, registerName);
-    } else if ((instruction & 0xF0FF) == 0xF015) {
+        instruction.execute_ldk(state, registerName);
+    } else if ((instruction_num & 0xF0FF) == 0xF015) {
         // Fx15 - LD DT, Vx
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_lddt(state, registerName);
-    } else if ((instruction & 0xF0FF) == 0xF018) {
+        instruction.execute_lddt(state, registerName);
+    } else if ((instruction_num & 0xF0FF) == 0xF018) {
         // Fx18 - LD ST, Vx
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_ldst(state, registerName);
-    } else if ((instruction & 0xF0FF) == 0xF01E) {
+        instruction.execute_ldst(state, registerName);
+    } else if ((instruction_num & 0xF0FF) == 0xF01E) {
         // Fx1E - ADD I, Vx
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_addi(state, registerName);
-    } else if ((instruction & 0xF0FF) == 0xF029) {
+        instruction.execute_addi(state, registerName);
+    } else if ((instruction_num & 0xF0FF) == 0xF029) {
         // Fx29 - LD F, Vx
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_ldf(state, registerName);
-    } else if ((instruction & 0xF0FF) == 0xF033) {
+        instruction.execute_ldf(state, registerName);
+    } else if ((instruction_num & 0xF0FF) == 0xF033) {
         // Fx33 - LD B, Vx
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_ldb(state, registerName);
-    } else if ((instruction & 0xF0FF) == 0xF055) {
+        instruction.execute_ldb(state, registerName);
+    } else if ((instruction_num & 0xF0FF) == 0xF055) {
         // Fx55 - LD [I], Vx
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_ldai(state, registerName);
-    } else if ((instruction & 0xF0FF) == 0xF065) {
+        instruction.execute_ldai(state, registerName);
+    } else if ((instruction_num & 0xF0FF) == 0xF065) {
         // Fx65 - LD Vx, [I]
-        const registerName = @intCast(u8, (instruction & 0x0F00) >> 8);
+        const registerName = @intCast(u8, (instruction_num & 0x0F00) >> 8);
 
-        execute_ldm(state, registerName);
+        instruction.execute_ldm(state, registerName);
     } else {
         assert(false); // Unknown instruction
     }

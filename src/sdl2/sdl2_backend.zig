@@ -115,11 +115,11 @@ pub fn execute_main_loop(state: *chip8.CPUState, config: chip8.EmuConfig) !void 
         // Poll events
         var sdlEvent: c.SDL_Event = undefined;
         while (c.SDL_PollEvent(&sdlEvent) > 0) {
-            switch (@intToEnum(c.SDL_EventType, @intCast(c_int, sdlEvent.type))) {
-                .SDL_QUIT => {
+            switch (sdlEvent.type) {
+                c.SDL_QUIT => {
                     shouldExit = true;
                 },
-                .SDL_KEYDOWN => {
+                c.SDL_KEYDOWN => {
                     if (sdlEvent.key.keysym.sym == c.SDLK_ESCAPE)
                         shouldExit = true;
                 },
