@@ -26,4 +26,8 @@ pub fn build(b: *Builder) void {
 
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
+
+    const test_step = b.step("test", "Run tests");
+    const a_test = b.addTest("src/chip8/test.zig");
+    test_step.dependOn(&a_test.step);
 }
